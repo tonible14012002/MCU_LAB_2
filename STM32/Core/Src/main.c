@@ -32,7 +32,8 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define COUNTER 25
+#define COUNTER 100
+#define ONE_SEC 1000
 #define LED_COUNTER 100
 /* USER CODE END PD */
 
@@ -166,7 +167,7 @@ void display7SEG(int num){
 	}
 }
 
-int enableSeg(){
+void enableSeg(){
 	switch(state){
 		 case firstSeg:
 			HAL_GPIO_WritePin ( EN0_GPIO_Port , EN0_Pin , 0 ) ;
@@ -200,6 +201,8 @@ int enableSeg(){
 int counter = COUNTER;
 int ledCounter = LED_COUNTER;
 int led_buffer [4] = {4 , 3 , 2 , 1};
+int hour = 15 , minute = 10 , second = 56;
+
 void update7SEG(){
 	counter--;
 	if(counter <= 0) {
@@ -229,6 +232,13 @@ void update7SEG(){
 			}
 			counter = COUNTER;
 	}
+}
+
+void updateClockBuffer(){
+	led_buffer[firstSeg] = hour/10;
+	led_buffer[secondSeg] = hour%10;
+	led_buffer[thirdSeg] = minute/10;
+	led_buffer[fourthSeg] = minute%10;
 }
 
 void blinkTwoLeds(){
@@ -279,6 +289,20 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  second ++;
+	  if ( second >= 60) {
+		  second = 0;
+		  minute ++;
+	  }
+	  if( minute >= 60) {
+		  minute = 0;
+		  hour ++;
+	  }
+	  if( hour >=24) {
+		  hour = 0;
+	  }
+	   updateClockBuffer() ;
+	   HAL_Delay(ONE_SEC);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
