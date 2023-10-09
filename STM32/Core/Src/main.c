@@ -33,6 +33,7 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 #define COUNTER 50
+#define LED_COUNTER 100
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -64,13 +65,21 @@ static void MX_TIM2_Init(void);
   * @brief  The application entry point.
   * @retval int
   */
-
-enum SegState  {firstSeg = 1, secondSeg = 2};
+enum SegState  {firstSeg, secondSeg, thirdSeg, fourthSeg};
 enum SegState state = firstSeg;
 
-void display7SEG(enum SegState state){
-	switch(state){
-	 case firstSeg:
+void display7SEG(int num){
+	switch(num){
+	 case 0:
+			HAL_GPIO_WritePin ( SEG0_GPIO_Port , SEG0_Pin , 0 ) ;
+			HAL_GPIO_WritePin ( SEG1_GPIO_Port , SEG1_Pin , 0 ) ;
+			HAL_GPIO_WritePin ( SEG2_GPIO_Port , SEG2_Pin , 0 ) ;
+			HAL_GPIO_WritePin ( SEG3_GPIO_Port , SEG3_Pin , 0 ) ;
+			HAL_GPIO_WritePin ( SEG4_GPIO_Port , SEG4_Pin , 0 ) ;
+			HAL_GPIO_WritePin ( SEG5_GPIO_Port , SEG5_Pin , 0 ) ;
+			HAL_GPIO_WritePin ( SEG6_GPIO_Port , SEG6_Pin , 1 ) ;
+			break;
+	 case 1:
 		 	HAL_GPIO_WritePin ( SEG0_GPIO_Port , SEG0_Pin , 1 ) ;
 		 	HAL_GPIO_WritePin ( SEG1_GPIO_Port , SEG1_Pin , 0 ) ;
 		 	HAL_GPIO_WritePin ( SEG2_GPIO_Port , SEG2_Pin , 0 ) ;
@@ -79,7 +88,7 @@ void display7SEG(enum SegState state){
 		 	HAL_GPIO_WritePin ( SEG5_GPIO_Port , SEG5_Pin , 1 ) ;
 		 	HAL_GPIO_WritePin ( SEG6_GPIO_Port , SEG6_Pin , 1 ) ;
 		 	break;
-	 case secondSeg:
+	 case 2:
 		 	HAL_GPIO_WritePin ( SEG0_GPIO_Port , SEG0_Pin , 0 ) ;
 		 	HAL_GPIO_WritePin ( SEG1_GPIO_Port , SEG1_Pin , 0 ) ;
 		 	HAL_GPIO_WritePin ( SEG2_GPIO_Port , SEG2_Pin , 1 ) ;
@@ -87,43 +96,93 @@ void display7SEG(enum SegState state){
 		 	HAL_GPIO_WritePin ( SEG4_GPIO_Port , SEG4_Pin , 0 ) ;
 		 	HAL_GPIO_WritePin ( SEG5_GPIO_Port , SEG5_Pin , 1 ) ;
 		 	HAL_GPIO_WritePin ( SEG6_GPIO_Port , SEG6_Pin , 0 ) ;
-		 	break;
+		 break;
+	 case 3:
+			HAL_GPIO_WritePin ( SEG0_GPIO_Port , SEG0_Pin , 0 ) ;
+			HAL_GPIO_WritePin ( SEG1_GPIO_Port , SEG1_Pin , 0 ) ;
+			HAL_GPIO_WritePin ( SEG2_GPIO_Port , SEG2_Pin , 0 ) ;
+			HAL_GPIO_WritePin ( SEG3_GPIO_Port , SEG3_Pin , 0 ) ;
+			HAL_GPIO_WritePin ( SEG4_GPIO_Port , SEG4_Pin , 1 ) ;
+			HAL_GPIO_WritePin ( SEG5_GPIO_Port , SEG5_Pin , 1 ) ;
+			HAL_GPIO_WritePin ( SEG6_GPIO_Port , SEG6_Pin , 0 ) ;
+			break;
 	 default:
-		 	break;
+		 break;
 
 	}
+}
+
+int enableSeg(){
+	switch(state){
+		 case firstSeg:
+			HAL_GPIO_WritePin ( EN0_GPIO_Port , EN0_Pin , 0 ) ;
+			HAL_GPIO_WritePin ( EN1_GPIO_Port , EN1_Pin , 1 ) ;
+			HAL_GPIO_WritePin ( EN2_GPIO_Port , EN2_Pin , 1 ) ;
+			HAL_GPIO_WritePin ( EN3_GPIO_Port , EN3_Pin , 1 ) ;
+			break;
+		 case secondSeg:
+			HAL_GPIO_WritePin ( EN0_GPIO_Port , EN0_Pin , 1 ) ;
+			HAL_GPIO_WritePin ( EN1_GPIO_Port , EN1_Pin , 0 ) ;
+			break;
+		 case thirdSeg:
+			HAL_GPIO_WritePin ( EN1_GPIO_Port , EN1_Pin , 1 ) ;
+			HAL_GPIO_WritePin ( EN2_GPIO_Port , EN2_Pin , 0 ) ;
+			break;
+		 case fourthSeg:
+			HAL_GPIO_WritePin ( EN2_GPIO_Port , EN2_Pin , 1 ) ;
+			HAL_GPIO_WritePin ( EN3_GPIO_Port , EN3_Pin , 0 ) ;
+			break;
+		 default:
+			break;
+		}
 }
 
 int counter = COUNTER;
-void resetCounter () {
-	counter = COUNTER;
+int ledCounter = LED_COUNTER;
+void changeSEG(){
+	counter--;
+	if(counter <= 0) {
+			switch(state){
+			 case firstSeg:
+				 	enableSeg();
+					display7SEG(1);
+					state = secondSeg;
+					break;
+			 case secondSeg:
+				 	enableSeg();
+					display7SEG(2);
+					state = thirdSeg;
+				 	break;
+			 case thirdSeg:
+				    enableSeg();
+					display7SEG(3);
+					state = fourthSeg;
+					break;
+			 case fourthSeg:
+				 	enableSeg();
+					display7SEG(0);
+					state = firstSeg;
+					break;
+			 default:
+				 	break;
+			}
+			counter = COUNTER;
+	}
+
 }
-void initState(){
-	state = firstSeg;
-}
-void toggleState(){
-	if(state == firstSeg) state = secondSeg;
-	else state = firstSeg;
+
+void blinkTwoLeds(){
+	ledCounter--;
+	if(ledCounter <= 0) {
+		HAL_GPIO_TogglePin(DOT_GPIO_Port , DOT_Pin);
+		ledCounter = LED_COUNTER;
+	}
+
 }
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
-
-	counter--;
-	if(counter <= 0) {
-			toggleState();
-
-			if(state == firstSeg){
-				HAL_GPIO_WritePin ( EN0_GPIO_Port , EN0_Pin , 0 ) ;
-				HAL_GPIO_WritePin ( EN1_GPIO_Port , EN1_Pin , 1 ) ;
-				display7SEG(firstSeg);
-			}else {
-				HAL_GPIO_WritePin ( EN0_GPIO_Port , EN0_Pin , 1 ) ;
-				HAL_GPIO_WritePin ( EN1_GPIO_Port , EN1_Pin , 0 ) ;
-				display7SEG(secondSeg);
-			}
-			resetCounter();
-	}
-
+	changeSEG();
+ 	blinkTwoLeds();
 }
 
 int main(void)
@@ -153,11 +212,11 @@ int main(void)
   MX_TIM2_Init();
   HAL_TIM_Base_Start_IT(&htim2);
   /* USER CODE BEGIN 2 */
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  resetCounter();
   while (1)
   {
     /* USER CODE END WHILE */
@@ -261,14 +320,17 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, LED_Pin|EN0_Pin|EN1_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, DOT_Pin|LED_Pin|EN0_Pin|EN1_Pin
+                          |EN2_Pin|EN3_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, SEG0_Pin|SEG1_Pin|SEG2_Pin|SEG3_Pin
                           |SEG4_Pin|SEG5_Pin|SEG6_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pins : LED_Pin EN0_Pin EN1_Pin */
-  GPIO_InitStruct.Pin = LED_Pin|EN0_Pin|EN1_Pin;
+  /*Configure GPIO pins : DOT_Pin LED_Pin EN0_Pin EN1_Pin
+                           EN2_Pin EN3_Pin */
+  GPIO_InitStruct.Pin = DOT_Pin|LED_Pin|EN0_Pin|EN1_Pin
+                          |EN2_Pin|EN3_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
