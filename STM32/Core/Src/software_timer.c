@@ -1,12 +1,13 @@
 /*
  * software_timer.c
  *
- *  Created on: Oct 9, 2023
+ *  Created on: Oct 29, 2022
  *      Author: WELCOME
  */
 
 #include "software_timer.h"
 
+//timer 0
 int timer0_counter = 0;
 int timer0_flag = 0;
 
@@ -15,6 +16,7 @@ void setTimer0(int duration){
 	timer0_flag = 0;
 }
 
+//timer 1
 int timer1_counter = 0;
 int timer1_flag = 0;
 
@@ -23,12 +25,22 @@ void setTimer1(int duration){
 	timer1_flag = 0;
 }
 
+//timer 2
 int timer2_counter = 0;
 int timer2_flag = 0;
 
 void setTimer2(int duration){
 	timer2_counter = duration;
 	timer2_flag = 0;
+}
+
+//timer 3
+int timer3_counter = 0;
+int timer3_flag = 0;
+
+void setTimer3(int duration){
+	timer3_counter = duration;
+	timer3_flag = 0;
 }
 
 void timer_run(){
@@ -50,6 +62,13 @@ void timer_run(){
 		timer2_counter--;
 		if(timer2_counter == 0){
 			timer2_flag = 1;
+		}
+	}
+
+	if(timer3_counter > 0){
+		timer3_counter--;
+		if(timer3_counter == 0){
+			timer3_flag = 1;
 		}
 	}
 }
