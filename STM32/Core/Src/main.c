@@ -199,7 +199,7 @@ int enableSeg(){
 
 int counter = COUNTER;
 int ledCounter = LED_COUNTER;
-int led_buffer [4] = {5 , 3 , 2 , 1};
+int led_buffer [4] = {4 , 3 , 2 , 1};
 void update7SEG(){
 	counter--;
 	if(counter <= 0) {
